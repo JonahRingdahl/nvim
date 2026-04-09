@@ -24,6 +24,7 @@ vim.keymap.set('n', '<leader>Q', ':qa!<CR>', { desc = 'Close nvim' })
 vim.keymap.set('n', '<leader>ff', require('telescope.builtin').find_files, { desc = 'Telescope find files' })
 vim.keymap.set('n', '<leader>fg', require('telescope.builtin').live_grep, { desc = 'Telescope live grep' })
 vim.keymap.set('n', '<leader>fs', require('telescope.builtin').grep_string, { desc = 'Telescope grep string' })
+vim.keymap.set('n', '<leader>fb', require('telescope').extensions.file_browser.file_browser, { desc = 'Telescope file browser' })
 
 -- DAP keybindings
 -- Debug
