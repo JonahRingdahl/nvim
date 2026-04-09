@@ -18,24 +18,10 @@ return {
           require("lspconfig")[server_name].setup({
             capabilities = require('blink.cmp').get_lsp_capabilities(),
             on_attach = function(client, bufnr)
-              -- LSP keybindings are handled in lua/config/lsp.lua
             end,
           })
         end,
-        ["rust_analyzer"] = function()
-          require("lspconfig").rust_analyzer.setup({
-            capabilities = require('blink.cmp').get_lsp_capabilities(),
-            on_attach = function(client, bufnr)
-              -- LSP keybindings are handled in lua/config/lsp.lua
-            end,
-            settings = {
-              ['rust-analyzer'] = {
-                procMacro = { enable = true },
-                cargo = { features = "all" },
-              },
-            },
-          })
-        end,
+        ["rust_analyzer"] = function() end,
       },
     })
   end,

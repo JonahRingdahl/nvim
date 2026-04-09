@@ -8,7 +8,7 @@ return {
     config = function()
         local dap = require("dap")
         local dapui = require("dapui")
-        
+
         dapui.setup()
         
         -- Auto open/close dap UI
@@ -24,7 +24,7 @@ return {
         dap.listeners.before.event_exited.dapui_config = function()
             dapui.close()
         end
-        
+
         -- Debug keybindings are handled in lua/config/keys.lua
     end,
 }
