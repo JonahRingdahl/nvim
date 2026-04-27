@@ -5,6 +5,7 @@ vim.keymap.set('n', '<leader>sh', '<C-w>s', { desc = 'Split pane horizontally' }
 
 -- Open Terminal in new pane
 vim.keymap.set('n', '<leader>t', '<C-w>s<C-w>j:terminal<CR>', { desc = 'Open Terminal' })
+vim.keymap.set('t', '<Esc>', '<C-\\><C-n>', { desc = 'Escape from terminal' })
 
 -- navigate panes
 vim.keymap.set('n', '<leader>h', '<C-w>h', { desc = 'Navigate pane left' })
@@ -24,7 +25,8 @@ vim.keymap.set('n', '<leader>Q', ':qa!<CR>', { desc = 'Close nvim' })
 vim.keymap.set('n', '<leader>ff', require('telescope.builtin').find_files, { desc = 'Telescope find files' })
 vim.keymap.set('n', '<leader>fg', require('telescope.builtin').live_grep, { desc = 'Telescope live grep' })
 vim.keymap.set('n', '<leader>fs', require('telescope.builtin').grep_string, { desc = 'Telescope grep string' })
-vim.keymap.set('n', '<leader>fb', require('telescope').extensions.file_browser.file_browser, { desc = 'Telescope file browser' })
+vim.keymap.set('n', '<leader>fb', require('telescope').extensions.file_browser.file_browser,
+	{ desc = 'Telescope file browser' })
 
 -- DAP keybindings
 -- Debug
@@ -35,4 +37,7 @@ vim.keymap.set('n', '<F12>', require('dap').step_out, { desc = 'Debug: Step Out'
 vim.keymap.set('n', '<leader>b', require('dap').toggle_breakpoint, { desc = 'Debug: Toggle Breakpoint' })
 
 -- Utility keybindings
+vim.keymap.set('n', '<leader>ih', function()
+	vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled())
+end, { desc = 'Toggle inlay hints' })
 --vim.keymap.set('n', '<leader>xx', '<cmd>Trouble toggle<cr>', { desc = 'Toggle Trouble' })

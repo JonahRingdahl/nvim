@@ -10,8 +10,7 @@ return {
         local dapui = require("dapui")
 
         dapui.setup()
-        
-        -- Auto open/close dap UI
+
         dap.listeners.before.attach.dapui_config = function()
             dapui.open()
         end
@@ -25,6 +24,66 @@ return {
             dapui.close()
         end
 
-        -- Debug keybindings are handled in lua/config/keys.lua
+        dap.configurations.rust = {
+            {
+                type = "codelldb",
+                name = "Debug",
+                request = "launch",
+                program = function()
+                    if vim.fn.confirm("Build project?", "&yes\n&no", 2) == 1 then
+                        vim.cmd("Cargo build")
+                    end
+                    return "${workspaceFolder}/target/debug/${workspaceFolderBasename}"
+                end,
+                cwd = "${workspaceFolder}",
+                stopOnEntry = false,
+            },
+        }
+
+        dap.configurations.cs = {
+            {
+                type = "coreclr",
+                name = "Debug",
+                request = "launch",
+                program = function()
+                    if vim.fn.confirm("Build project?", "&yes\n&no", 2) == 1 then
+                        vim.cmd("!dotnet build")
+                    end
+                    local dll = vim.fn.glob("${workspaceFolder}/bin/Debug/net*/.dll")
+                    return dll ~= "" and dll or vim.fn.input("Path to DLL: ")
+                end,
+                cwd = "${workspaceFolder}",
+            },
+        }
+
+        dap.configurations.python = {
+            {
+                type = "python",
+                name = "Debug",
+                request = "launch",
+                program = "${file}",
+                cwd = "${workspaceFolder}",
+                stopOnEntry = true,
+            },
+        }
+
+        dap.configurations.cpp = {
+            {
+                type = "codelldb",
+                name = "Debug",
+                request = "launch",
+                program = function()
+                    if vim.fn.confirm("Build project?", "&yes\n&no", 2) == 1 then
+                        vim.cmd("!make")
+                    end
+                    return vim.fn.input("Executable: ", "${workspaceFolder}/", "file")
+                end,
+                cwd = "${workspaceFolder}",
+                stopOnEntry = true,
+                args = {},
+            },
+        }
+
+        dap.configurations.c = dap.configurations.cpp
     end,
 }
