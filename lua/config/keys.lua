@@ -26,7 +26,7 @@ vim.keymap.set('n', '<leader>ff', require('telescope.builtin').find_files, { des
 vim.keymap.set('n', '<leader>fg', require('telescope.builtin').live_grep, { desc = 'Telescope live grep' })
 vim.keymap.set('n', '<leader>fs', require('telescope.builtin').grep_string, { desc = 'Telescope grep string' })
 vim.keymap.set('n', '<leader>fb', require('telescope').extensions.file_browser.file_browser,
-	{ desc = 'Telescope file browser' })
+  { desc = 'Telescope file browser' })
 
 -- DAP keybindings
 -- Debug
@@ -37,7 +37,7 @@ vim.keymap.set('n', '<F12>', require('dap').step_out, { desc = 'Debug: Step Out'
 vim.keymap.set('n', '<leader>b', require('dap').toggle_breakpoint, { desc = 'Debug: Toggle Breakpoint' })
 
 -- Utility keybindings
-vim.keymap.set('n', '<leader>ih', function()
-	vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled())
+vim.keymap.set('n', '<leader>h', function()
+  vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled())
 end, { desc = 'Toggle inlay hints' })
 --vim.keymap.set('n', '<leader>xx', '<cmd>Trouble toggle<cr>', { desc = 'Toggle Trouble' })
