@@ -16,9 +16,10 @@ return {
       "c",
       "cpp",
       "c_sharp",
-      "odin",
-      "rust",
-    },
+       "odin",
+       "rust",
+       "markdown",
+     },
     highlight = {
       enable = true,
     },
