@@ -21,7 +21,38 @@ return {
             end,
           })
         end,
-        ["rust_analyzer"] = function() end,
+        ["rust_analyzer"] = function()
+          require("lspconfig").rust_analyzer.setup({
+            capabilities = require('blink.cmp').get_lsp_capabilities(),
+            on_attach = function(client, bufnr)
+            end,
+            settings = {
+              ["rust-analyzer"] = {
+                formatting = {
+                  use_tab = false,
+                  tab_size = 2,
+                  indent_width = 2,
+                },
+              },
+            },
+          })
+        end,
+        ["clangd"] = function()
+          require("lspconfig").clangd.setup({
+            capabilities = require('blink.cmp').get_lsp_capabilities(),
+            on_attach = function(client, bufnr)
+            end,
+            settings = {
+              clangd = {
+                formatting = {
+                  use_tab = false,
+                  tab_size = 2,
+                  indent_width = 2,
+                },
+              },
+            },
+          })
+        end,
       },
     })
   end,
