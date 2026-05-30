@@ -4,7 +4,7 @@ vim.keymap.set('n', '<leader>sv', '<C-w>v', { desc = 'Split pane vertically' })
 vim.keymap.set('n', '<leader>sh', '<C-w>s', { desc = 'Split pane horizontally' })
 
 -- Open Terminal in new pane
-vim.keymap.set('n', '<leader>t', '<C-w>s<C-w>j:terminal<CR>', { desc = 'Open Terminal' })
+vim.keymap.set('n', '<leader><Return>', '<C-w>s<C-w>j:terminal<CR>', { desc = 'Open Terminal' })
 vim.keymap.set('t', '<Esc>', '<C-\\><C-n>', { desc = 'Escape from terminal' })
 
 -- navigate panes
@@ -37,7 +37,7 @@ vim.keymap.set('n', '<F12>', require('dap').step_out, { desc = 'Debug: Step Out'
 vim.keymap.set('n', '<leader>b', require('dap').toggle_breakpoint, { desc = 'Debug: Toggle Breakpoint' })
 
 -- Utility keybindings
-vim.keymap.set('n', '<leader>ih', function()
+vim.keymap.set('n', '<leader>th', function()
   vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled())
 end, { desc = 'Toggle inlay hints' })
 --vim.keymap.set('n', '<leader>xx', '<cmd>Trouble toggle<cr>', { desc = 'Toggle Trouble' })
