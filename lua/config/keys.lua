@@ -37,7 +37,7 @@ vim.keymap.set('n', '<F12>', require('dap').step_out, { desc = 'Debug: Step Out'
 vim.keymap.set('n', '<leader>b', require('dap').toggle_breakpoint, { desc = 'Debug: Toggle Breakpoint' })
 
 -- Utility keybindings
-vim.keymap.set('n', '<leader>h', function()
+vim.keymap.set('n', '<leader>ih', function()
   vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled())
 end, { desc = 'Toggle inlay hints' })
 --vim.keymap.set('n', '<leader>xx', '<cmd>Trouble toggle<cr>', { desc = 'Toggle Trouble' })
