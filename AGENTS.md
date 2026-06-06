@@ -29,7 +29,7 @@ This repository is a Neovim configuration using Lua and the lazy.nvim plugin man
         ├── supermaven.lua  # AI completion
         ├── telescope.lua   # Fuzzy finder
         ├── todo-comments.lua # TODO highlighting
-        ├── tokyodark.lua   # Color scheme
+        ├── nightfox.lua    # Color scheme
         ├── trouble.lua     # Diagnostics viewer
         └── ts.lua          # Treesitter
 ```
@@ -125,7 +125,7 @@ end
 - **LSP**: `mason.nvim` + `mason-lspconfig.nvim` for LSP server management, with `roslyn.nvim` for C#
 - **Debugging**: `nvim-dap` with UI integration (`nvim-dap-ui`, `nvim-dap-virtual-text`)
 - **Git**: `gitsigns.nvim` for git status signs and operations
-- **UI**: `noice.nvim` for UI/notifications, `lualine.nvim` for status line, `tokyodark.nvim` theme
+- **UI**: `noice.nvim` for UI/notifications, `lualine.nvim` for status line, `nightfox.nvim` theme
 - **Utilities**: `Comment.nvim` for commenting, `nvim-autopairs` for bracket pairing, `todo-comments.nvim` for TODO highlighting
 - **Diagnostics**: `trouble.nvim` for diagnostics viewer
 - **AI**: `supermaven-nvim` for AI-powered completion
