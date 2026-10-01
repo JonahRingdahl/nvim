@@ -1,26 +1,74 @@
-vim.api.nvim_create_autocmd("LspAttach", {
-    group = vim.api.nvim_create_augroup("UserLspConfig", {}),
-    callback = function(ev)
-        local opts = { buffer = ev.buf }
+-- LSP client configuration via the native Neovim 0.11+ API.
+-- Servers are enabled by mason-lspconfig automatically; this file only adds
+-- global keybindings and buffer behaviour on attach.
 
-        vim.keymap.set("n", "gd", vim.lsp.buf.definition, opts)
-        vim.keymap.set("n", "gD", vim.lsp.buf.declaration, opts)
-        vim.keymap.set("n", "gr", vim.lsp.buf.references, opts)
-        vim.keymap.set("n", "gi", vim.lsp.buf.implementation, opts)
-        vim.keymap.set("n", "K", vim.lsp.buf.hover, opts)
-        vim.keymap.set("n", "<C-k>", vim.lsp.buf.signature_help, opts)
-        vim.keymap.set("n", "<leader>rn", vim.lsp.buf.rename, opts)
-        vim.keymap.set({ "n", "v" }, "<leader>a", vim.lsp.buf.code_action, opts)
+local function on_attach(ev)
+  local opts = { buffer = ev.buf }
 
-        -- Format on save
-        vim.api.nvim_create_autocmd("BufWritePre", {
-            group = vim.api.nvim_create_augroup("LspFormat." .. ev.buf, {}),
-            buffer = ev.buf,
-            callback = function()
-                vim.lsp.buf.format({ bufnr = ev.buf })
-            end,
-        })
+  vim.keymap.set("n", "gd", vim.lsp.buf.definition, vim.tbl_extend("force", opts, { desc = "LSP goto definition" }))
+  vim.keymap.set("n", "gD", vim.lsp.buf.declaration, vim.tbl_extend("force", opts, { desc = "LSP goto declaration" }))
+  vim.keymap.set("n", "gr", vim.lsp.buf.references, vim.tbl_extend("force", opts, { desc = "LSP references" }))
+  vim.keymap.set("n", "gi", vim.lsp.buf.implementation, vim.tbl_extend("force", opts, { desc = "LSP goto implementation" }))
+  vim.keymap.set("n", "K", vim.lsp.buf.hover, vim.tbl_extend("force", opts, { desc = "LSP hover" }))
+  vim.keymap.set("n", "<C-k>", vim.lsp.buf.signature_help, vim.tbl_extend("force", opts, { desc = "LSP signature help" }))
+  vim.keymap.set("n", "<leader>rn", vim.lsp.buf.rename, vim.tbl_extend("force", opts, { desc = "LSP rename" }))
+  vim.keymap.set({ "n", "v" }, "<leader>a", vim.lsp.buf.code_action, vim.tbl_extend("force", opts, { desc = "LSP code action" }))
+
+  -- Format on save, only when the buffer has a real filetype
+  local group = vim.api.nvim_create_augroup("LspFormat." .. ev.buf, { clear = true })
+  vim.api.nvim_create_autocmd("BufWritePre", {
+    group = group,
+    buffer = ev.buf,
+    callback = function()
+      vim.lsp.buf.format({ bufnr = ev.buf, async = true })
     end,
+  })
+end
+
+vim.api.nvim_create_autocmd("LspAttach", {
+  group = vim.api.nvim_create_augroup("UserLspConfig", { clear = true }),
+  callback = on_attach,
+})
+
+-- Base capabilities for every server. blink.cmp's plugin file reads these and
+-- merges its own on top when it loads, so completion works without ordering
+-- concerns. Must be a table, not a function: blink passes it straight through.
+vim.lsp.config("*", {
+  capabilities = vim.lsp.protocol.make_client_capabilities(),
+})
+
+-- Per-server settings that need to apply to every instance of that server.
+vim.lsp.config("clangd", {
+  settings = {
+    clangd = {
+      formatting = {
+        use_tab = false,
+        tab_size = 2,
+        indent_width = 2,
+      },
+    },
+  },
+})
+
+vim.lsp.config("lua_ls", {
+  settings = {
+    Lua = {
+      diagnostics = { globals = { "vim", "Snacks" } },
+      workspace = { checkThirdParty = false },
+    },
+  },
+})
+
+-- easy-dotnet's Roslyn client. Neovim's file watching is more accurate than the
+-- server's, and this machine's fd limit is high, so opt in explicitly.
+vim.lsp.config("easy_dotnet", {
+  capabilities = {
+    workspace = {
+      didChangeWatchedFiles = {
+        dynamicRegistration = true,
+      },
+    },
+  },
 })
 
 -- LSP handlers customized via noice

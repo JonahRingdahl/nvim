@@ -1,22 +1,15 @@
 return {
-    "jay-babu/mason-nvim-dap.nvim",
-    dependencies = {
-        "williamboman/mason.nvim",
-        "mfussenegger/nvim-dap",
+  "jay-babu/mason-nvim-dap.nvim",
+  dependencies = {
+    { "mason-org/mason.nvim", opts = {} },
+    "mfussenegger/nvim-dap",
+  },
+  opts = {
+    ensure_installed = {
+      "codelldb",
+      "netcoredbg",
+      "debugpy",
     },
-    config = function()
-        require("mason-nvim-dap").setup({
-            ensure_installed = {
-                "codelldb",
-                "netcoredbg",
-                "debugpy",
-            },
-            automatic_installation = true,
-            handlers = {
-                function(config)
-                    require("mason-nvim-dap").default_setup(config)
-                end,
-            },
-        })
-    end,
+    automatic_installation = true,
+  },
 }

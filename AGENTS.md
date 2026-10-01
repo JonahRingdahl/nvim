@@ -2,165 +2,161 @@
 
 This repository is a Neovim configuration using Lua and the lazy.nvim plugin manager. This guide helps agentic coding agents understand the codebase structure and conventions.
 
+Target: **Neovim 0.12.5** on Linux/Wayland, with `mapleader = " "` and `maplocalleader = "\\"`.
+
 ## Project Structure
 
 ```
 .
-├── init.lua                 # Main entry point
-├── lazy-lock.json          # Plugin lockfile
+├── init.lua                 # Entry point: PATH fix, ui2, then config.* requires
+├── lazy-lock.json           # Plugin lockfile
+├── after/
+│   └── ftplugin/rust.lua    # Rust buffer-local keymaps (guarded on :RustLsp)
 └── lua/
-    ├── config/             # Configuration modules
-    │   ├── keys.lua        # Global keybindings
-    │   ├── lazy.lua        # Plugin manager setup
-    │   ├── lsp.lua         # LSP configuration and keybindings
-    │   ├── diagnostics.lua # Diagnostic settings
-    │   └── options.lua     # Basic editor options
-    └── plugins/            # Plugin specifications
-        ├── autopair.lua    # Auto bracket pairing
-        ├── blink.lua       # Completion engine
-        ├── comment.lua     # Commenting plugin
-        ├── dap.lua         # Debug adapter protocol
-        ├── gitsigns.lua    # Git integration
-        ├── lualine.lua     # Status line
-        ├── mason.lua       # LSP server manager
-        ├── mason-lspconfig.lua # LSP auto-configuration
-        ├── noice.lua       # UI/notifications
-        ├── roslyn.lua      # C# LSP
-        ├── supermaven.lua  # AI completion
-        ├── telescope.lua   # Fuzzy finder
+    ├── config/              # Loaded directly by init.lua
+    │   ├── lazy.lua         # Bootstrap + lazy.nvim setup
+    │   ├── options.lua      # Basic editor options
+    │   ├── keys.lua         # Keybindings not owned by a plugin
+    │   ├── lsp.lua          # vim.lsp.config + LspAttach keymaps
+    │   └── diagnostics.lua  # vim.diagnostic.config
+    └── plugins/             # lazy.nvim specs, auto-imported by lua/config/lazy.lua
+        ├── agentic.lua      # agentic.nvim (opencode-acp provider)
+        ├── autopair.lua     # Auto bracket pairing
+        ├── blink.lua        # Completion engine
+        ├── dap.lua          # nvim-dap + dap-ui + virtual text
+        ├── easy-dotnet.lua  # C#/F# LSP, DAP, test runner, solution tree
+        ├── gitsigns.lua     # Git integration
+        ├── lualine.lua      # Status line
+        ├── mason.lua        # Tool installer
+        ├── mason-dap.lua    # Installs DAP servers (codelldb, netcoredbg, debugpy)
+        ├── mason-lspconfig.lua # Installs + auto-enables LSP servers
+        ├── nightfox.lua     # Color scheme
+        ├── noice.lua        # LSP progress / command UI
+        ├── rustaceanvim.lua # rust-analyzer (owns rust_analyzer)
+        ├── snacks.lua       # snacks.nvim picker (primary find UX)
+        ├── supermaven.lua   # AI completion
+        ├── telescope.lua    # Telescope (secondary finder)
         ├── todo-comments.lua # TODO highlighting
-        ├── nightfox.lua    # Color scheme
-        ├── trouble.lua     # Diagnostics viewer
-        └── ts.lua          # Treesitter
+        ├── trouble.lua      # Diagnostics viewer
+        └── ts.lua           # nvim-treesitter (branch = "master")
 ```
+
+Note: there is no `roslyn.lua`. easy-dotnet ships and manages Roslyn itself, so a separate C# LSP spec is not needed.
 
 ## Build/Lint/Test Commands
 
-This is a Neovim configuration repository - traditional build/test commands don't apply. Instead:
+No build system. Validation happens on Neovim startup.
 
-- **Load config**: Start Neovim normally (`nvim`) - configuration loads automatically
-- **Plugin management**: Run `:Lazy` in Neovim to manage plugins
-- **LSP diagnostics**: LSP provides linting via `vim.lsp.buf.format()` on save
-- **Configuration validation**: Neovim will error on startup if Lua syntax is invalid
+- **Load config**: `nvim`
+- **Plugin management**: `:Lazy`
+- **Sync**: `nvim --headless -c 'Lazy! sync' -c 'qa'`
+- **Health**: `:checkhealth` (or `:checkhealth snacks`, `:checkhealth lsp`, ...)
+
+### Verifying a change headlessly
+
+`--headless` is fine for most checks. Two known headless-only artifacts, not real bugs:
+
+- `:checkhealth snacks` may report `` `vim.ui.select` is not set to `Snacks.picker.select` ``. snacks loads the picker on the `UIEnter` autocmd, which does not fire in headless. Run health after `UIEnter` (from a `VimEnter` autocmd + `vim.schedule`) to see the real result.
+- Anything gated on `Insert`/`BufRead` events (blink, gitsigns, treesitter, supermaven, autopairs) will not have loaded yet. Force them with `require("lazy").load({ plugins = { "<name>" } })` before `require`-ing.
 
 ### Single File Testing
-No test framework is configured. To test individual configuration files:
+
 1. Start Neovim: `nvim`
-2. Reload specific config: `:lua dofile('path/to/file.lua')`
-3. Check for errors with `:lua print("Config loaded successfully")`
+2. Reload a config file: `:lua dofile('lua/config/options.lua')`
+3. Confirm: `:lua print("ok")`
 
 ## Code Style Guidelines
 
 ### General Lua Style
-- Use 2 spaces for indentation (configured in `options.lua`)
-- Expand tabs to spaces (`expandtab = true`)
-- Use smart indentation (`smartindent = true`)
-- Prefer modern Lua 5.1+ syntax compatible with Neovim's LuaJIT
+- 2 spaces for indentation, `expandtab`, `smartindent` (see `options.lua`)
+- Lua 5.1 / LuaJIT compatible syntax
 
 ### Module Structure
-Each file should return a single value:
+Plugin spec:
 ```lua
--- Plugin configuration (lua/plugins/example.lua)
 return {
     "plugin-author/plugin-name",
-    config = function()
-        -- Configuration logic
+    opts = { ... },          -- preferred; lazy calls setup() for you
+    config = function(_, opts) -- use when the plugin has no setup(), or to key off opts
+        ...
     end,
 }
 ```
 
+Config module:
 ```lua
--- Configuration module (lua/config/example.lua)
 vim.opt.some_option = true
-vim.keymap.set('n', '<leader>key', function()
-    -- Keybinding logic
-end, { desc = 'Description' })
-```
-
-### Imports and Requires
-- Use `require()` for module imports
-- Place requires at the top of files or within config functions
-- Use local variables for frequently accessed modules:
-```lua
-local builtin = require('telescope.builtin')
+vim.keymap.set("n", "<leader>key", function() end, { desc = "Description" })
 ```
 
 ### Naming Conventions
-- **Files**: lowercase with hyphens for plugins (e.g., `telescope.lua`)
-- **Variables**: `snake_case` for local variables
-- **Functions**: `snake_case` for regular functions
-- **Config options**: Use vim.opt API: `vim.opt.option_name = value`
-
-### Error Handling
-- Use vim.api.nvim_echo for user-facing error messages
-- Check shell errors when running external commands:
-```lua
-local out = vim.fn.system({ "command" })
-if vim.v.shell_error ~= 0 then
-    -- Handle error
-end
-```
+- **Files**: lowercase with hyphens (`mason-lspconfig.lua`)
+- **Locals/functions**: `snake_case`
+- **Options**: `vim.opt.option_name = value`
 
 ### Plugin Configuration Patterns
-- Plugin specs follow lazy.nvim format
-- Use config functions for setup logic
-- Include version constraints when necessary
-- Declare dependencies explicitly
+- Prefer `opts = {}` over `config = function() ... require(...) end`; lazy.nvim calls the plugin's `setup()` for you
+- Declare `dependencies` explicitly
+- Repo names matter: mason is `mason-org/*`, but the DAP installer is still `jay-babu/mason-nvim-dap.nvim` (there is no `mason-org/mason-nvim-dap`)
 
 ### Keybinding Conventions
-- Use leader key (`<leader>`) for custom mappings
-- Include descriptive text for which-key integration
-- Current keybinding patterns:
-  - **File operations** (`<leader>f`): `<leader>ff` (find files), `<leader>fg` (live grep), `<leader>fs` (grep string)
-  - **Window management** (`<leader>s`): `<leader>sv` (split vertical), `<leader>sh` (split horizontal)
-  - **Navigation**: `<leader>h/j/k/l>` for pane navigation
-  - **Terminal**: `<leader>t` to open terminal in new pane
-  - **Debugging**: `<F5>` (continue), `<F10>` (step over), `<F11>` (step into), `<F12>` (step out), `<leader>b` (toggle breakpoint)
-  - **LSP**: `gd` (definition), `gD` (declaration), `gr` (references), `gi` (implementation), `K` (hover), `<C-k>` (signature help), `<leader>rn` (rename), `<leader>ca` (code action)
-  - **Session**: `<leader>q` (close pane), `<leader>Q` (quit nvim)
+- `<leader>` for custom mappings, always with `desc` for which-key
+- Plugin-owned keys live in that plugin's `keys` table, not in `config/keys.lua`
+- `config/keys.lua` only holds keys with no plugin owner; comment it when a key deliberately moves to a plugin
+
+Current keymap surface:
+
+| Group | Keys |
+| --- | --- |
+| Find (snacks) | `<leader>ff` files, `fg` live grep, `fs` grep word, `fb` buffers, `fr` recent, `fp` projects |
+| Find (telescope) | `<leader>tf`, `tg`, `tb` |
+| Windows | `<leader>sv` split right, `sh` split below, `h/j/k/l` navigate, `q` close pane, `Q` quit |
+| Terminal | `<leader><Return>` new pane, `<Esc>` in terminal-mode |
+| Debugging | `<F5>` continue, `<F10>` over, `<F11>` into, `<F12>` out, `<leader>b` breakpoint, `<leader>dr` REPL |
+| LSP | `gd`, `gD`, `gr`, `gi`, `K`, `<C-k>`, `<leader>rn` rename, `<leader>a` code action |
+| LSP misc | `<leader>th` toggle inlay hints |
+| .NET | `<C-p>` run profile |
+| Agentic | `<C-\>` toggle chat, `<C-'>` add context, `<C-,>` new session |
 
 ### Current Plugin Ecosystem
-- **Completion**: `blink.cmp` (modern completion engine) with LSP, path, snippets, and buffer sources
-- **Fuzzy finder**: `telescope.nvim` for file finding, live grep, and string search
-- **LSP**: `mason.nvim` + `mason-lspconfig.nvim` for LSP server management, with `roslyn.nvim` for C#
-- **Debugging**: `nvim-dap` with UI integration (`nvim-dap-ui`, `nvim-dap-virtual-text`)
-- **Git**: `gitsigns.nvim` for git status signs and operations
-- **UI**: `noice.nvim` for UI/notifications, `lualine.nvim` for status line, `nightfox.nvim` theme
-- **Utilities**: `Comment.nvim` for commenting, `nvim-autopairs` for bracket pairing, `todo-comments.nvim` for TODO highlighting
-- **Diagnostics**: `trouble.nvim` for diagnostics viewer
-- **AI**: `supermaven-nvim` for AI-powered completion
-- **Syntax**: `nvim-treesitter` for syntax highlighting
+- **Find**: `snacks.nvim` picker is primary; `telescope.nvim` kept (also an easy-dotnet dependency)
+- **Completion**: `blink.cmp` (LSP, path, snippets, buffer)
+- **LSP**: `mason.nvim` + `mason-lspconfig.nvim`; `clangd` for C/C++, `rust-analyzer` via `rustaceanvim` for Rust, Roslyn via `easy-dotnet` for C#/F#
+- **Debugging**: `nvim-dap` + `nvim-dap-ui` + `nvim-dap-virtual-text`; `mason-nvim-dap` installs servers
+- **Git**: `gitsigns.nvim`
+- **UI**: `noice.nvim`, `lualine.nvim`, `nightfox.nvim`
+- **Utilities**: `nvim-autopairs`, `todo-comments.nvim`, `trouble.nvim`
+- **AI**: `supermaven-nvim` (inline), `agentic.nvim` (chat, via `opencode-acp`)
+- **Syntax**: `nvim-treesitter` on `branch = "master"`
 
 ### LSP Configuration
-- Attach keybindings in `LspAttach` autocmd
-- Enable format-on-save via LSP
-- Use buffer-local options for LSP mappings
-
-### Autocommands
-- Create named augroups for organization
-- Use buffer-specific autocmds when possible
-- Clean up autocmds to prevent memory leaks
+- Uses the native `vim.lsp.config` / `LspAttach` API (Neovim 0.11+). Do **not** reintroduce `williamboman/*` repos or `handlers = {}`; those are dead in mason-lspconfig v2.
+- `capabilities` must be a **table**, not a function: blink reads `vim.lsp.config["*"].capabilities` directly.
+- Attach keymaps in the `LspAttach` autocmd; format on save in a buffer-scoped `BufWritePre` augroup.
+- `rust_analyzer` is excluded from mason-lspconfig's `automatic_enable` — rustaceanvim manages it, and manual setup conflicts.
 
 ## Common Patterns
 
 ### Adding a New Plugin
-1. Create file in `lua/plugins/plugin-name.lua`
-2. Return plugin spec table
-3. Configure in config function if needed
-
-### Adding Configuration Options
-1. Add to appropriate file in `lua/config/`
-2. Use vim.opt API for options
-3. Test with `:lua dofile('lua/config/file.lua')`
+1. Create `lua/plugins/plugin-name.lua`
+2. Return the spec (prefer `opts = {}`)
+3. Put keybindings in the spec's `keys` table
+4. Verify: `nvim --headless -c 'Lazy! sync' -c 'qa'`, then `require` it
 
 ### Debugging Configuration
-- Use `:lua print(variable)` to inspect values
-- Check `:lua vim.print(table)` for tables
-- Reload entire config with `:lua dofile('init.lua')`
+- `:lua vim.print(value)` to inspect
+- `:checkhealth <plugin>` for a focused report
+- Reload with `:lua dofile('init.lua')`
+
+## Environment Notes
+
+- `init.lua` prepends `~/.local/bin` to `$PATH`; the fish shell does not include it. `tree-sitter` and `dotnet-easydotnet` are installed there.
+- C# setup uses `dotnet-easydotnet` (a `dotnet tool` in `~/.local/bin`) plus easy-dotnet.nvim, with `alacritty` as the external terminal.
+- No `sudo` access; system-wide installs are not possible.
+- Optional, not installed: `wl-clipboard`/`xdg-utils` (system clipboard, needed for agentic image paste), `dotnet-ef` (EF migrations), `lazygit`, kitty/wezterm/ghostty (snacks image rendering).
 
 ## Notes for Agents
-- This is personal Neovim config, modify with care
-- Plugin versions pinned in lazy-lock.json for stability
-- LSP formatting is enabled automatically on save
-- Configuration focuses on minimal, functional setup
-- No build system - validation happens on Neovim startup
+- Personal Neovim config; modify with care
+- Plugin versions pinned in `lazy-lock.json`
+- LSP formatting runs on save automatically
+- Keep the config minimal and functional; prefer removing a spec over layering workarounds

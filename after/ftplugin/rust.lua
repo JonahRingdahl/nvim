@@ -1,8 +1,9 @@
+-- Rust-specific keymaps. rustaceanvim creates a :RustLsp command on attach,
+-- so these are only defined when that command actually exists.
 local bufnr = vim.api.nvim_get_current_buf()
-vim.keymap.set("n", "<leader>a", function()
-    vim.cmd.RustLsp('codeAction')
-end, { silent = true, buffer = bufnr, desc = "Rust LSP code action" })
+local has_rust_lsp = vim.fn.exists(":RustLsp") == 2
 
-vim.keymap.set("n", "K", function()
-    vim.cmd.RustLsp({'hover', 'actions'})
-end, { silent = true, buffer = bufnr, desc = "Rust LSP hover actions" })
+if has_rust_lsp then
+  vim.keymap.set("n", "<leader>a", "<cmd>RustLsp codeAction<cr>", { silent = true, buffer = bufnr, desc = "Rust LSP code action" })
+  vim.keymap.set("n", "K", "<cmd>RustLsp hover actions<cr>", { silent = true, buffer = bufnr, desc = "Rust LSP hover actions" })
+end

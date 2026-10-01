@@ -2,8 +2,6 @@ return {
     "saghen/blink.cmp",
     version = "1.*",
     dependencies = {
-        "williamboman/mason.nvim",
-        "williamboman/mason-lspconfig.nvim",
         "rafamadriz/friendly-snippets",
     },
     config = function()

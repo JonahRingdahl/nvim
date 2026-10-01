@@ -1,5 +1,6 @@
 return {
   "nvim-treesitter/nvim-treesitter",
+  branch = "master",
   build = ":TSUpdate",
   event = { "BufReadPost", "BufNewFile" },
   opts = {
@@ -16,10 +17,10 @@ return {
       "c",
       "cpp",
       "c_sharp",
-       "odin",
-       "rust",
-       "markdown",
-     },
+      "odin",
+      "rust",
+      "markdown",
+    },
     highlight = {
       enable = true,
     },
@@ -28,5 +29,6 @@ return {
     },
   },
   config = function(_, opts)
+    require("nvim-treesitter.configs").setup(opts)
   end,
 }
