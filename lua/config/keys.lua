@@ -29,9 +29,7 @@ vim.keymap.set("n", "<leader>tf", require("telescope.builtin").find_files, { des
 vim.keymap.set("n", "<leader>tg", require("telescope.builtin").live_grep, { desc = "Telescope live grep" })
 vim.keymap.set("n", "<leader>tb", require("telescope.builtin").buffers, { desc = "Telescope buffers" })
 
--- Utility keybindings
-vim.keymap.set("n", "<leader>th", function()
-  vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled())
-end, { desc = "Toggle inlay hints" })
+-- Inlay hints are an LSP action, so they moved from <leader>th to <leader>ci
+-- to sit with <leader>ca / <leader>cr.
 
 -- DAP keybindings are set in lua/plugins/dap.lua once nvim-dap has loaded.

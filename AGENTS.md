@@ -23,6 +23,7 @@ Target: **Neovim 0.12.5** on Linux/Wayland, with `mapleader = " "` and `maplocal
         ├── agentic.lua      # agentic.nvim (opencode-acp provider)
         ├── autopair.lua     # Auto bracket pairing
         ├── blink.lua        # Completion engine
+        ├── cyberdream.lua   # Color scheme
         ├── dap.lua          # nvim-dap + dap-ui + virtual text
         ├── easy-dotnet.lua  # C#/F# LSP, DAP, test runner, solution tree
         ├── gitsigns.lua     # Git integration
@@ -30,7 +31,6 @@ Target: **Neovim 0.12.5** on Linux/Wayland, with `mapleader = " "` and `maplocal
         ├── mason.lua        # Tool installer
         ├── mason-dap.lua    # Installs DAP servers (codelldb, netcoredbg, debugpy)
         ├── mason-lspconfig.lua # Installs + auto-enables LSP servers
-        ├── nightfox.lua     # Color scheme
         ├── noice.lua        # LSP progress / command UI
         ├── rustaceanvim.lua # rust-analyzer (owns rust_analyzer)
         ├── snacks.lua       # snacks.nvim picker (primary find UX)
@@ -38,7 +38,8 @@ Target: **Neovim 0.12.5** on Linux/Wayland, with `mapleader = " "` and `maplocal
         ├── telescope.lua    # Telescope (secondary finder)
         ├── todo-comments.lua # TODO highlighting
         ├── trouble.lua      # Diagnostics viewer
-        └── ts.lua           # nvim-treesitter (branch = "master")
+        ├── ts.lua           # nvim-treesitter (branch = "master")
+        └── which-key.lua    # Keymap hint popup on <leader>
 ```
 
 Note: there is no `roslyn.lua`. easy-dotnet ships and manages Roslyn itself, so a separate C# LSP spec is not needed.
@@ -113,10 +114,11 @@ Current keymap surface:
 | Windows | `<leader>sv` split right, `sh` split below, `h/j/k/l` navigate, `q` close pane, `Q` quit |
 | Terminal | `<leader><Return>` new pane, `<Esc>` in terminal-mode |
 | Debugging | `<F5>` continue, `<F10>` over, `<F11>` into, `<F12>` out, `<leader>b` breakpoint, `<leader>dr` REPL |
-| LSP | `gd`, `gD`, `gr`, `gi`, `K`, `<C-k>`, `<leader>rn` rename, `<leader>a` code action |
-| LSP misc | `<leader>th` toggle inlay hints |
+| LSP goto | `gd` definition, `gD` declaration, `gr` references, `gi` implementation, `K` hover, `<C-k>` signature help |
+| LSP code | `<leader>ca` code action, `<leader>cr` rename, `<leader>ci` toggle inlay hints |
 | .NET | `<C-p>` run profile |
-| Agentic | `<C-\>` toggle chat, `<C-'>` add context, `<C-,>` new session |
+| Agentic | `<leader>aa` toggle chat, `<leader>ac` add context, `<leader>an` new session |
+| Hints | `<leader>?` buffer-local keymaps |
 
 ### Current Plugin Ecosystem
 - **Find**: `snacks.nvim` picker is primary; `telescope.nvim` kept (also an easy-dotnet dependency)
@@ -124,10 +126,12 @@ Current keymap surface:
 - **LSP**: `mason.nvim` + `mason-lspconfig.nvim`; `clangd` for C/C++, `rust-analyzer` via `rustaceanvim` for Rust, Roslyn via `easy-dotnet` for C#/F#
 - **Debugging**: `nvim-dap` + `nvim-dap-ui` + `nvim-dap-virtual-text`; `mason-nvim-dap` installs servers
 - **Git**: `gitsigns.nvim`
-- **UI**: `noice.nvim`, `lualine.nvim`, `nightfox.nvim`
+- **UI**: `noice.nvim`, `lualine.nvim` (cyberdream theme), `cyberdream.nvim`
 - **Utilities**: `nvim-autopairs`, `todo-comments.nvim`, `trouble.nvim`
 - **AI**: `supermaven-nvim` (inline), `agentic.nvim` (chat, via `opencode-acp`)
 - **Syntax**: `nvim-treesitter` on `branch = "master"`
+- **Hints**: `which-key.nvim` v3 on `VeryLazy`; `<leader>w` is a proxy for `<c-w>`, not a real mapping
+- `<leader>a` is agentic, `<leader>c` is LSP code actions. LSP goto keys stay unprefixed (`gd`, `gr`, `K`) since they get typed constantly.
 
 ### LSP Configuration
 - Uses the native `vim.lsp.config` / `LspAttach` API (Neovim 0.11+). Do **not** reintroduce `williamboman/*` repos or `handlers = {}`; those are dead in mason-lspconfig v2.

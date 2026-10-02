@@ -11,8 +11,12 @@ local function on_attach(ev)
   vim.keymap.set("n", "gi", vim.lsp.buf.implementation, vim.tbl_extend("force", opts, { desc = "LSP goto implementation" }))
   vim.keymap.set("n", "K", vim.lsp.buf.hover, vim.tbl_extend("force", opts, { desc = "LSP hover" }))
   vim.keymap.set("n", "<C-k>", vim.lsp.buf.signature_help, vim.tbl_extend("force", opts, { desc = "LSP signature help" }))
-  vim.keymap.set("n", "<leader>rn", vim.lsp.buf.rename, vim.tbl_extend("force", opts, { desc = "LSP rename" }))
-  vim.keymap.set({ "n", "v" }, "<leader>a", vim.lsp.buf.code_action, vim.tbl_extend("force", opts, { desc = "LSP code action" }))
+  -- LSP actions live under <leader>c. <leader>a belongs to agentic.nvim.
+  vim.keymap.set("n", "<leader>cr", vim.lsp.buf.rename, vim.tbl_extend("force", opts, { desc = "LSP rename" }))
+  vim.keymap.set({ "n", "v" }, "<leader>ca", vim.lsp.buf.code_action, vim.tbl_extend("force", opts, { desc = "LSP code action" }))
+  vim.keymap.set("n", "<leader>ci", function()
+    vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled())
+  end, vim.tbl_extend("force", opts, { desc = "Toggle inlay hints" }))
 
   -- Format on save, only when the buffer has a real filetype
   local group = vim.api.nvim_create_augroup("LspFormat." .. ev.buf, { clear = true })
